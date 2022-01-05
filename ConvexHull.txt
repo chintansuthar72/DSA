@@ -1,0 +1,112 @@
+#include <bits/stdc++.h>
+using namespace std;
+struct point
+{
+    int x, y;
+    // Operator overloading for == and < operator
+    bool operator==(const point p2) const
+    {
+        if (this->x == p2.x && this->y == p2.y)
+            return 1;
+        return 0;
+    }
+    bool operator<(const point& t) const
+    {
+        if(this->x == t.x){
+            return (this->y < t.y);
+        }
+        return (this->x < t.x);
+    }
+};
+int crossProduct(point a, point b, point c)
+{ 
+    int y1 = a.y - b.y;
+    int y2 = a.y - c.y;
+    int x1 = a.x - b.x;
+    int x2 = a.x - c.x;
+    return y2 * x1 - y1 * x2;
+}
+int distance(point a, point b, point c)
+{
+    int y1 = a.y - b.y;
+    int y2 = a.y - c.y;
+    int x1 = a.x - b.x;
+    int x2 = a.x - c.x;
+    int item1 = (y1 * y1 + x1 * x1);
+    int item2 = (y2 * y2 + x2 * x2);
+    if (item1 == item2)
+        return 0;
+    else if (item1 < item2)
+        return -1;
+    return 1;     
+}
+set<point> convexHull(point points[], int n)
+{
+    point start = points[0];
+    for (int i = 1; i < n; i++)
+    { 
+        if (points[i].x < start.x)
+            start = points[i];
+    }
+    point current = start;
+    set<point> result;
+    result.insert(start);
+    vector<point> *collinearPoints = new vector<point>;
+    while (true)
+    {
+        point nextTarget = points[0];
+        for (int i = 1; i < n; i++)
+        {
+            if (points[i] == current)
+                continue;
+            int val = crossProduct(current, nextTarget, points[i]);
+            if (val > 0)
+            { 
+                nextTarget = points[i];
+                collinearPoints = new vector<point>;
+            }
+            else if (val == 0)
+            { 
+                if (distance(current, nextTarget, points[i]) < 0)
+                { 
+                    collinearPoints->push_back(nextTarget);
+                    nextTarget = points[i];
+                }
+                else
+                {
+                    collinearPoints->push_back(points[i]);
+                }
+            }
+        }
+        vector<point>::iterator it;
+        for (it = collinearPoints->begin(); it != collinearPoints->end(); it++)
+        {
+            result.insert(*it);
+        }
+        if (nextTarget == start)
+            break;
+        result.insert(nextTarget);
+        current = nextTarget;
+    }
+    return result;
+}
+
+int main()
+{
+    int n;
+    cin >> n;
+    point points[n];
+    for (int i = 0; i < n; ++i)
+    {
+        int x,y;
+        cin >> x >> y;
+        points[i].x = x;
+        points[i].y = y;
+    }
+    set<point> result;
+    result = convexHull(points, n);
+    set<point>::iterator it;
+    for (it = result.begin(); it != result.end(); it++)
+        cout << it->x << " " << it->y << "\n";
+    return 0;
+}
